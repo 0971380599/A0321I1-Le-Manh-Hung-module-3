@@ -12,8 +12,8 @@ Version 2.0
 + changed table type from MyISAM to InnoDB
 + added foreign keys for all tables 
 *********************************************************************
-*/
-
+*/	
+select * from classicmodels.customers;
 
 /*!40101 SET NAMES utf8 */;
 
