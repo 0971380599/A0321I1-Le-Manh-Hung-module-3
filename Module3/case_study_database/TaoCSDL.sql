@@ -28,11 +28,11 @@ create table nhan_vien(
     email varchar(50) not null,
     dia_chi varchar(50) not null,
     primary key (id_nhan_vien),
-    foreign key (id_vi_tri) references vi_tri(id_vi_tri),
-    foreign key (id_bo_phan) references bo_phan(id_bo_phan),
-    foreign key (id_trinh_do) references trinh_do(id_trinh_do)
+    foreign key (id_vi_tri) references vi_tri(id_vi_tri) on delete cascade on update cascade,
+    foreign key (id_bo_phan) references bo_phan(id_bo_phan) on delete cascade on update cascade,
+    foreign key (id_trinh_do) references trinh_do(id_trinh_do) on delete cascade on update cascade
 );
---  drop table nhan_vien;
+-- drop table nhan_vien;
 create table loai_khach(
 	id_loai_khach int not null,
     ten_loai_khach varchar(45) not null,
@@ -49,7 +49,7 @@ create table khach_hang(
     email varchar(50) not null,
     dia_chi varchar(50) not null,
     primary key (id_khach_hang),
-    foreign key (id_loai_khach) references loai_khach(id_loai_khach)
+    foreign key (id_loai_khach) references loai_khach(id_loai_khach) on delete cascade on update cascade
 ); 
 -- drop table khach_hang;
 create table kieu_thue(
@@ -73,9 +73,10 @@ create table dich_vu(
     id_loai_dich_vu int not null,
     trang_thai text,
     primary key (id_dich_vu),
-    foreign key (id_kieu_thue) references kieu_thue(id_kieu_thue),
-    foreign key (id_loai_dich_vu) references loai_dich_vu(id_loai_dich_vu)
+    foreign key (id_kieu_thue) references kieu_thue(id_kieu_thue) on delete cascade on update cascade,
+    foreign key (id_loai_dich_vu) references loai_dich_vu(id_loai_dich_vu) on delete cascade on update cascade
 );
+-- drop table dich_vu;
 create table hop_dong(
 	id_hop_dong int not null auto_increment,
     id_nhan_vien int not null,
@@ -86,9 +87,9 @@ create table hop_dong(
     tien_dat_coc float not null,
     tong_tien float not null,
     primary key (id_hop_dong),
-    foreign key (id_nhan_vien) references nhan_vien(id_nhan_vien),
-    foreign key (id_dich_vu) references dich_vu(id_dich_vu),
-    foreign key (id_khach_hang) references khach_hang(id_khach_hang)
+    foreign key (id_nhan_vien) references nhan_vien(id_nhan_vien) on delete cascade on update cascade,
+    foreign key (id_dich_vu) references dich_vu(id_dich_vu) on delete cascade on update cascade,
+    foreign key (id_khach_hang) references khach_hang(id_khach_hang) on delete cascade on update cascade
 );
 -- drop table hop_dong;
 create table hop_dong_chi_tiet(
@@ -97,8 +98,8 @@ create table hop_dong_chi_tiet(
     id_dich_vu_di_kem int not null,
     so_luong int not null,
     primary key (id_hop_dong_chi_tiet),
-    foreign key (id_hop_dong) references hop_dong(id_hop_dong),
-    foreign key (id_dich_vu_di_kem) references dich_vu_di_kem(id_dich_vu_di_kem)
+    foreign key (id_hop_dong) references hop_dong(id_hop_dong) on delete cascade on update cascade,
+    foreign key (id_dich_vu_di_kem) references dich_vu_di_kem(id_dich_vu_di_kem) on delete cascade on update cascade
 );
 -- drop table hop_dong_chi_tiet;
 create table dich_vu_di_kem(
