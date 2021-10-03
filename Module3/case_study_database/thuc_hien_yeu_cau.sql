@@ -91,13 +91,11 @@ where exists(select hop_dong.id_hop_dong where hop_dong.ngay_lam_hop_dong betwee
 group by nhan_vien.id_nhan_vien
 having so_hop_dong_lap_duoc < 4;
 -- câu 16:
--- select khach_hang.id_khach_hang from khach_hang
--- where khach_hang.id_khach_hang not in (select khach_hang.id_khach_hang from khach_hang inner join hop_dong on khach_hang.id_khach_hang = hop_dong.id_khach_hang
--- where hop_dong.ngay_lam_hop_dong between '2016-01-01' and current_date())
+-- select khach_hang.id_khach_hang from khach_hang inner join hop_dong on khach_hang.id_khach_hang = hop_dong.id_khach_hang
+-- where hop_dong.ngay_lam_hop_dong not between '2017-01-01' and '2019-01-01'
 -- group by khach_hang.id_khach_hang;
-delete from khach_hang 
-where khach_hang.id_khach_hang not in (select khach_hang.id_khach_hang from khach_hang inner join hop_dong on khach_hang.id_khach_hang = hop_dong.id_khach_hang
-where hop_dong.ngay_lam_hop_dong between '2017-01-01' and '2019-01-01');
+delete khach_hang from khach_hang inner join hop_dong on khach_hang.id_khach_hang = hop_dong.id_khach_hang
+where hop_dong.ngay_lam_hop_dong not between '2017-01-01' and '2019-01-01';
 -- câu 17:
 select khach_hang.id_khach_hang, khach_hang.ten, khach_hang.ngay_sinh, khach_hang.email, sum(hop_dong.tong_tien) as tong_tien from khach_hang 
 inner join hop_dong on khach_hang.id_khach_hang = hop_dong.id_khach_hang
@@ -105,9 +103,8 @@ where year(hop_dong.ngay_lam_hop_dong) = '2019'
 group by khach_hang.id_khach_hang
 having tong_tien > 10000000;
 -- câu 18:
-delete from khach_hang 
-where khach_hang.id_khach_hang not in (select khach_hang.id_khach_hang from khach_hang inner join hop_dong on khach_hang.id_khach_hang = hop_dong.id_khach_hang
-where hop_dong.ngay_lam_hop_dong between '2016-01-01' and current_date());
+delete khach_hang from khach_hang inner join hop_dong on khach_hang.id_khach_hang = hop_dong.id_khach_hang
+where hop_dong.ngay_lam_hop_dong not between '2016-01-01' and current_date();
 -- câu 19:
 update dich_vu_di_kem 
 set dich_vu_di_kem.gia = dich_vu_di_kem.gia*2
@@ -163,3 +160,88 @@ update nhan_vien
 set nhan_vien.dia_chi = 'Liên Chiểu, Đà Nẵng'
 where nhan_vien.id_nhan_vien = @nhan_vien;
 -- câu 23:
+DELIMITER //
+create procedure sp_1(in id_kh int)
+begin 
+delete from khach_hang where khach_hang.id_khach_hang = id_kh;
+end //
+DELIMITER ;
+call sp_1(2012);
+-- câu 24:
+DELIMITER //
+create procedure sp_2(
+in id_hd int,
+in id_nv int,
+in id_dv int,
+in id_kh int,
+in ngay_lam_hd date,
+in ngay_ket_thuc date,
+in tien_dat_coc float,
+in tong_tien float
+)
+begin 
+insert into hop_dong value (id_hd,id_nv,id_dv,id_kh,ngay_lam_hd,ngay_ket_thuc,tien_dat_coc,tong_tien);
+end //
+DELIMITER ;
+call sp_2(3020,1001,8,2001,'2018-07-26', '2018-07-28', 1000000, 3000000);
+-- câu 25:
+DELIMITER //
+create trigger hien_thi_hop_dong after delete on hop_dong
+for each row
+begin
+set @a = (select count(hop_dong.id_hop_dong) as so_luong_ban_ghi_con_lai from hop_dong);
+end //
+DELIMITER ;
+delete hop_dong from hop_dong where hop_dong.id_hop_dong = 3020;
+select @a;
+-- câu 26:
+DELIMITER //
+create trigger tr_2 before update on hop_dong
+for each row
+begin
+if (new.ngay_ket_thuc-hop_dong.ngay_lam_hop_dong) < '2' then
+signal sqlstate '45000'
+set message_text = "ERROR: ngày kết thúc phải lớn hơn ngày làm ít nhất 2 ngày";
+end if;
+end //
+DELIMITER ;
+drop trigger tr_2;
+set sql_safe_updates =0;
+update hop_dong
+set hop_dong.ngay_ket_thuc = '2018-04-08'
+where hop_dong.id_hop_dong = 3001;
+set sql_safe_updates =1;
+-- câu 27:
+DELIMITER //
+create function func_1() returns int 
+READS SQL DATA
+begin
+set @dem_dich_vu = (select count(dich_vu.id_dich_vu) from dich_vu inner join hop_dong on hop_dong.id_dich_vu = dich_vu.id_dich_vu
+where hop_dong.tong_tien > 2000000);
+return @dem_dich_vu;
+end //
+DELIMITER ;
+select func_1();
+-- -----
+DELIMITER //
+create function func_2(id_khach_hang int) returns int 
+READS SQL DATA
+begin
+set @thoi_gian_dai_nhat = (select max(hop_dong.ngay_ket_thuc-hop_dong.ngay_lam_hop_dong) from hop_dong 
+where hop_dong.id_khach_hang = id_khach_hang);
+return @thoi_gian_dai_nhat;
+end //
+DELIMITER ;
+drop function func_2;
+select func_2(2001);
+-- câu 28:
+DELIMITER //
+create procedure sp_3(out id_dich_vu int) 
+begin
+set id_dich_vu = (select dich_vu.id_dich_vu from dich_vu inner join hop_dong on hop_dong.id_dich_vu = dich_vu.id_dich_vu
+inner join loai_dich_vu on dich_vu.id_loai_dich_vu = loai_dich_vu.id_loai_dich_vu
+where loai_dich_vu.ten_loai_dich_vu = 'Room' and year(hop_dong.ngay_lam_hop_dong) between '2015' and '2019');
+end //
+DELIMITER ;
+call sp_3(@dich_vu);
+delete from dich_vu where dich_vu.id_dich_vu = @dichvu;
