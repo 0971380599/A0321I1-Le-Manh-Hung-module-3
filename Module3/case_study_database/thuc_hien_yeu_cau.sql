@@ -199,7 +199,7 @@ DELIMITER //
 create trigger tr_2 before update on hop_dong
 for each row
 begin
-if (new.ngay_ket_thuc-hop_dong.ngay_lam_hop_dong) < '2' then
+if (new.ngay_ket_thuc-old.ngay_lam_hop_dong) < '2' then
 signal sqlstate '45000'
 set message_text = "ERROR: ngày kết thúc phải lớn hơn ngày làm ít nhất 2 ngày";
 end if;
@@ -208,7 +208,7 @@ DELIMITER ;
 drop trigger tr_2;
 set sql_safe_updates =0;
 update hop_dong
-set hop_dong.ngay_ket_thuc = '2018-04-08'
+set hop_dong.ngay_ket_thuc = '2018-04-04'
 where hop_dong.id_hop_dong = 3001;
 set sql_safe_updates =1;
 -- câu 27:
@@ -236,12 +236,12 @@ drop function func_2;
 select func_2(2001);
 -- câu 28:
 DELIMITER //
-create procedure sp_3(out id_dich_vu int) 
+create procedure sp_3() 
 begin
-set id_dich_vu = (select dich_vu.id_dich_vu from dich_vu inner join hop_dong on hop_dong.id_dich_vu = dich_vu.id_dich_vu
+delete dich_vu from dich_vu inner join hop_dong on hop_dong.id_dich_vu = dich_vu.id_dich_vu
 inner join loai_dich_vu on dich_vu.id_loai_dich_vu = loai_dich_vu.id_loai_dich_vu
-where loai_dich_vu.ten_loai_dich_vu = 'Room' and year(hop_dong.ngay_lam_hop_dong) between '2015' and '2019');
+where loai_dich_vu.ten_loai_dich_vu = 'Room' and year(hop_dong.ngay_lam_hop_dong) between '2015' and '2019';
 end //
 DELIMITER ;
-call sp_3(@dich_vu);
-delete from dich_vu where dich_vu.id_dich_vu = @dichvu;
+drop procedure sp_3;
+call sp_3();
